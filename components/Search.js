@@ -13,7 +13,24 @@ class Search extends React.Component {
         super(props);
         this.state = { films: []}
         searchedText: ""
-        isLoading: false
+        this.page = 0
+        this.totalPages = 0
+        this.state = {
+            films: [],
+            isLoading: false
+        }
+
+    }
+
+    _searchFilms() {
+        this.page = 0
+        this.totalPages = 0
+        this.setState({
+            films: []
+        }, () => {
+            console.log("Page : " + this.page + " / TotalPages : " + this.totalPages + " / Nombre de films :  " + this.state.films.length)
+        })
+        this._loadFilm()
     }
 
     _searchedTextInput(text){
@@ -22,11 +39,13 @@ class Search extends React.Component {
     _loadFilm(){
         if (this.searchedText.length > 0) {
             this.setState({ isLoading: true})
-            getFilmFromApiWithSearchedText(this.searchedText).then(data =>{
+            getFilmFromApiWithSearchedText(this.searchedText, this.page+1).then(data =>{
+                this.page = data.page
+                this.totalPages = data.total_pages
                 this.setState({
-                    films: data.results,
+                    films: [...this.state.films, ...data.results],
                     isLoading: false
-                })
+                    })
             })
         }
     }
@@ -41,20 +60,29 @@ class Search extends React.Component {
         }
     }
 
+    _displayDetailForFilm = (idFilm) => {
+        console.log("Display film with id " + idFilm)
+        this.props.navigation.navigate("FilmDetail", {idFilm: idFilm})
+    }
+
     render() {
         return (
             <View style={styles.main_container}>
                 <TextInput style={styles.text_input}
                            placeholder='Titre du film'
                            onChangeText={(text) => this._searchedTextInput(text)}
-                           onSubmitEditing={() => this._loadFilm()}/>
-                <Button style={styles.search_container} title='Rechercher' onPress={() => this._loadFilm()}/>
+                           onSubmitEditing={() => this._searchFilms()}/>
+                <Button style={styles.search_container} title='Rechercher' onPress={() => this._searchFilms()}/>
                 <FlatList
                     data={this.state.films}
                     keyExtractor={(item) => item.id.toString()}
-                    renderItem={({item}) => <FilmItem film ={item}/>}
+                    renderItem={({item}) => <FilmItem film ={item}
+                                                      displayDetailForFilm={this._displayDetailForFilm}/>}
                     onEndReachedTheshold={0.5}
-                    onEndReached={()=> {console.log("onEndReached")}}
+                    onEndReached={()=> {
+                        if (this.page < this.totalPages)
+                            this._loadFilm()
+                    }}
                 />
                 {this._displayLoading()}
             </View>
@@ -68,7 +96,6 @@ const styles = StyleSheet.create({
         marginTop: 20
     },
     text_input: {
-        marginTop: 35,
         marginBottom: 5,
         marginLeft: 5,
         marginRight: 5,
