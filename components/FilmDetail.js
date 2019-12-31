@@ -13,11 +13,19 @@ class FilmDetail extends React.Component {
     super(props)
     this.state = {
       film: undefined,
-      isLoading: true
+      isLoading: false
     }
   }
 
   componentDidMount() {
+    const favoriteFilmIndex = this.props.favoritesFilm.findIndex(item => item.id === this.props.navigation.state.params.idFilm)
+    if (favoriteFilmIndex!== -1) {
+      this.setState({
+        film: this.props.favoritesFilm[favoriteFilmIndex]
+      })
+      return
+    }
+    this.setState({isLoading: true})
     getFilmDetailFromApi(this.props.navigation.state.params.idFilm).then(data => {
       this.setState({
         film: data,
@@ -47,12 +55,10 @@ class FilmDetail extends React.Component {
       imagepath = require ('../image/ic_favorite.png')
     }
     return (
-      <Image source={imagepath} style={styles.favorite_image}></Image>
+      <Image
+          source={imagepath}
+          style={styles.favorite_image}/>
     )
-  }
-
-  componentDidUpdate() {
-    console.log(this.props.favoritesFilm)
   }
 
   _displayFilm() {
@@ -67,7 +73,7 @@ class FilmDetail extends React.Component {
           <Text style={styles.title_text}>{film.title}</Text>
           <TouchableOpacity style={styles.favorite_container} 
                             onPress={() => this._toggleFavorite()}>
-            {this._displayFavoriteImage()}
+                            {this._displayFavoriteImage()}
           </TouchableOpacity>
           <Text style={styles.description_text}>{film.overview}</Text>
           <Text style={styles.default_text}>Sorti le {moment(new Date(film.release_date)).format('DD/MM/YYYY')}</Text>
