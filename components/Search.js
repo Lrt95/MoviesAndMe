@@ -1,6 +1,6 @@
 // Components/Search.js
 
-import {Button, TextInput, View, StyleSheet, ActivityIndicator} from "react-native";
+import {Button, TextInput, View, StyleSheet, ActivityIndicator, SafeAreaView} from "react-native";
 import {getFilmFromApiWithSearchedText} from "../API/TMDBApi"
 
 import React from "react";
@@ -62,22 +62,25 @@ class Search extends React.Component {
 
     render() {
         return (
-            <View style={styles.main_container}>
-                <TextInput style={styles.text_input}
-                           placeholder='Titre du film'
-                           onChangeText={(text) => this._searchedTextInput(text)}
-                           onSubmitEditing={() => this._searchFilms()}/>
-                <Button title='Rechercher' onPress={() => this._searchFilms()}/>
-                <FilmList 
-                    films={this.state.films}
-                    navigation={this.props.navigation}
-                    loadFilms={this._loadFilm}
-                    page={this.page}
-                    totalPages={this.totalPages}
-                    favoriteList = {false}
-                />
-                {this._displayLoading()}
-            </View>
+            <SafeAreaView style={styles.main_container}>
+                <View style={styles.main_container}>
+                    <TextInput style={styles.text_input}
+                                placeholder='Titre du film'
+                                onChangeText={(text) => this._searchedTextInput(text)}
+                                onSubmitEditing={() => this._searchFilms()}/>
+                    <Button title='Rechercher' onPress={() => this._searchFilms()}/>
+                    <FilmList 
+                        films={this.state.films}
+                        navigation={this.props.navigation}
+                        loadFilms={this._loadFilm}
+                        page={this.page}
+                        totalPages={this.totalPages}
+                        favoriteList = {false}
+                    />
+                    {this._displayLoading()}
+                </View>
+            </SafeAreaView>
+            
         )
     }
 }
@@ -85,7 +88,6 @@ class Search extends React.Component {
 const styles = StyleSheet.create({
     main_container: {
         flex: 1,
-        marginTop: 20
     },
     text_input: {
         marginBottom: 5,
