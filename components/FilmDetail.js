@@ -7,6 +7,7 @@ import { connect } from 'react-redux'
 import { getFilmDetailFromApi, getImageFromApi } from '../API/TMDBApi'
 import moment from 'moment'
 import numeral from 'numeral'
+import EnlargeShrink from "../Animation/EnlargeShrink";
 
 
 class FilmDetail extends React.Component {
@@ -17,20 +18,26 @@ class FilmDetail extends React.Component {
       isLoading: false
     }
     this._shareFilm = this._shareFilm.bind(this)
+    this._toggleFavorite = this._toggleFavorite.bind(this)
   }
 
-  static navigationOptions = ({ navigation }) => {
-    const { params } = navigation.state
-    if (params.film != undefined && Platform.OS === 'ios') {
-      headerRight: <TouchableOpacity 
-                      style={styles.share_touchable_headerrightbutton}
-                      onPress={() => params.shareFilm()}>
-                    <Image
-                        style={styles.share_image}
-                        source={require('../Images/ic_share.png')} />
-                  </TouchableOpacity>
+    static navigationOptions = ({ navigation }) => {
+        const { params } = navigation.state
+        // On accède à la fonction shareFilm et au film via les paramètres qu'on a ajouté à la navigation
+        if (params.film != undefined && Platform.OS === 'ios') {
+          return {
+              // On a besoin d'afficher une image, il faut donc passe par une Touchable une fois de plus
+              headerRight: <TouchableOpacity
+                              style={styles.share_touchable_headerrightbutton}
+                              onPress={() => params.shareFilm()}>
+                              <Image
+                                style={styles.share_image}
+                                source={require('../image/ic_share.png')} />
+                            </TouchableOpacity>
+          }
+        }
     }
-  }
+
 
   _updateNavigationParams() {
     this.props.navigation.setParams({
@@ -74,13 +81,17 @@ class FilmDetail extends React.Component {
 
   _displayFavoriteImage () {
     var imagepath = require('../image/ic_favorite_border.png')
+    var shouldEnlarge = false
     if (this.props.favoritesFilm.findIndex(item => item.id === this.state.film.id) !== -1) {
+      shouldEnlarge = true
       imagepath = require ('../image/ic_favorite.png')
     }
     return (
-      <Image
+      <EnlargeShrink shouldEnlarge={shouldEnlarge}>
+        <Image
           source={imagepath}
-          style={styles.favorite_image}/>
+          style={styles.favorite_image}/>  
+      </EnlargeShrink>     
     )
   }
 
@@ -127,7 +138,7 @@ class FilmDetail extends React.Component {
       return (
         <TouchableOpacity 
           style={styles.share_touchable_floatingactionbutton} 
-          onPress={()=> this._shareFilm}>
+          onPress={()=> this._shareFilm()}>
           <Image 
             style={styles.share_image} 
             source={require('../image/ic_share.png')}/>
@@ -136,12 +147,13 @@ class FilmDetail extends React.Component {
     }
   }
 
+
   render() {
     return (
       <View style={styles.main_container}>
         {this._displayLoading()}
         {this._displayFilm()}
-        {this._displayFloatingActionButton}
+        {this._displayFloatingActionButton()}
       </View>
     )
   }
@@ -194,8 +206,9 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   favorite_image: {
-    width: 40,
-    height: 40
+    flex: 1,
+    width: null,
+    height: null
   },
   share_touchable_floatingactionbutton: {
     position: 'absolute',
